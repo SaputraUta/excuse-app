@@ -16,6 +16,10 @@ class Approval extends Model
         'remark',
         'approved_at'
     ];
+    
+    protected $casts = [
+        'approved_at' => 'datetime',
+    ];
 
     public function leaveRequest()
     {

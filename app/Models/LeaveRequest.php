@@ -28,4 +28,19 @@ class LeaveRequest extends Model
     public function user() {
         return $this->belongsTo(User::class);
     }
+
+    public function getStatusAttribute()
+    {
+        $approvals = $this->approvals;
+
+        if ($approvals->where('status', 'rejected')->count() > 0) {
+            return 'rejected';
+        }
+
+        if ($approvals->where('status', 'approved')->count() >= 2) {
+            return 'approved';
+        }
+
+        return 'pending';
+    }
 }
