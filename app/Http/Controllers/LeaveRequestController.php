@@ -25,20 +25,25 @@ class LeaveRequestController extends Controller
     {
         $validated = $request->validate([
             'request_date' => 'required|date',
+            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday',
+            'is_full_day' => 'boolean',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
-            'is_full_day' => 'boolean',
-            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday',
             'reason' => 'required|string',
             'remark' => 'nullable|string',
         ]);
-    
+
+        if ($request->boolean('is_full_day')) {
+            $validated['start_time'] = '09:00';
+            $validated['end_time'] = '18:00';
+        }
+
         $leaveRequest = LeaveRequest::create([
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'request_date' => $validated['request_date'],
-            'start_time' => $validated['start_time'] ?? null,
-            'end_time' => $validated['end_time'] ?? null,
-            'is_full_day' => $validated['is_full_day'] ?? false,
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'is_full_day' => $request->boolean('is_full_day'),
             'leave_type' => $validated['leave_type'],
             'reason' => $validated['reason'],
             'remark' => $validated['remark'] ?? null,
@@ -63,6 +68,7 @@ class LeaveRequestController extends Controller
         return redirect()->route('leave-requests.index')->with('success', 'Leave request submitted successfully.');
     }
 
+
     public function show(LeaveRequest $leaveRequest) {
         if ($leaveRequest->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
@@ -83,23 +89,36 @@ class LeaveRequestController extends Controller
     {
         if ($leaveRequest->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
-        }    
-        $isFullDay = filter_var($request->is_full_day, FILTER_VALIDATE_BOOLEAN);
+        }
 
         $validated = $request->validate([
             'request_date' => 'required|date',
-            'leave_type' => 'required|string',
-            'start_time' => $isFullDay ? 'nullable' : 'required|date_format:H:i',
-            'end_time' => $isFullDay ? 'nullable' : 'required|date_format:H:i|after_or_equal:start_time',
+            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday',
             'is_full_day' => 'boolean',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
             'reason' => 'required|string',
             'remark' => 'nullable|string',
         ]);
 
-        $leaveRequest->update($validated);
-    
-        return redirect()->route('leave-requests.index')->with('success', 'Leave request updated');    
+        if ($request->boolean('is_full_day')) {
+            $validated['start_time'] = '09:00';
+            $validated['end_time'] = '18:00';
+        }
+
+        $leaveRequest->update([
+            'request_date' => $validated['request_date'],
+            'leave_type' => $validated['leave_type'],
+            'is_full_day' => $request->boolean('is_full_day'),
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'reason' => $validated['reason'],
+            'remark' => $validated['remark'] ?? null,
+        ]);
+
+        return redirect()->route('leave-requests.index')->with('success', 'Leave request updated');
     }
+
 
     public function destroy(LeaveRequest $leaveRequest)
     {

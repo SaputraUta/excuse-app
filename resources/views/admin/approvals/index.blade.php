@@ -21,9 +21,11 @@
             <tr class="bg-gray-200">
                 <th class="border px-4 py-2">Employee</th>
                 <th class="border px-4 py-2">Leave Type</th>
-                <th class="border px-4 py-2">Dates</th>
+                <th class="border px-4 py-2">Requested Date</th>
+                <th class="border px-4 py-2">Times</th>
                 <th class="border px-4 py-2">Reason</th>
                 <th class="border px-4 py-2">Status</th>
+                <th class="border px-4 py-2">Remark</th>
                 <th class="border px-4 py-2">Action</th>
             </tr>
         </thead>
@@ -32,6 +34,7 @@
             <tr class="border">
                 <td class="border px-4 py-2">{{ $approval->leaveRequest->user->name }}</td>
                 <td class="border px-4 py-2">{{ $approval->leaveRequest->leave_type }}</td>
+                <td class="border px-4 py-2">{{ $approval->leaveRequest->request_date }}</td>
                 <td class="border px-4 py-2">
                     {{ $approval->leaveRequest->start_time }} - {{ $approval->leaveRequest->end_time }}
                 </td>
@@ -43,6 +46,7 @@
                         {{ ucfirst($approval->status) }}
                     </span>
                 </td>
+                <td class="border px-4 py-2 text-gray-500 italic">{{ $approval->remark ?? 'No remarks' }}</td>
                 <td class="border px-4 py-2">
                     @if($approval->status == 'pending')
                     <form action="{{ route('approvals.store') }}" method="POST" class="inline">
@@ -52,8 +56,6 @@
                         <button type="submit" name="status" value="approved" class="bg-green-500 text-white px-3 py-1 rounded">Approve</button>
                         <button type="submit" name="status" value="rejected" class="bg-red-500 text-white px-3 py-1 rounded">Reject</button>
                     </form>
-                    @else
-                    <p class="text-gray-500 italic">{{ $approval->remark ?? 'No remarks' }}</p>
                     @endif
                     <button onclick="openModal({{ $approval->leaveRequest->id }})" 
                         class="bg-blue-500 text-white px-3 py-1 rounded inline-block mt-1">View Details</button>

@@ -26,9 +26,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+    /** @var \Illuminate\Http\Request $request */
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if (Auth::user()->role === 'admin') {
+            return redirect()->route('approvals.index');
+        }
+
+        return redirect()->route('leave-requests.index');
     }
 
     /**
