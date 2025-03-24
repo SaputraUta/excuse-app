@@ -63,8 +63,14 @@
                 <textarea name="remark" class="w-full border p-2 rounded">{{ old('remark', $leaveRequest->remark) }}</textarea>
             </div>
 
-            <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded shadow-md hover:bg-blue-600">
-                Update Request
+            @php
+                $isRejected = $leaveRequest->status === 'rejected';
+            @endphp
+
+            <button type="submit" 
+                class="w-full {{ $isRejected ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600' }} 
+                text-white px-4 py-2 rounded shadow-md">
+                {{ $isRejected ? 'Resubmit Leave Request' : 'Update Request' }}
             </button>
         </form>
     </div>

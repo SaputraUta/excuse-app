@@ -43,10 +43,13 @@
                                 {{ $request->status == 'approved' ? 'bg-green-500' : ($request->status == 'pending' ? 'bg-yellow-500' : 'bg-red-500') }}">
                                 {{ ucfirst($request->status) }}
                             </span>
+                            @if ($request->resubmission_count > 0)
+                                <span class="ml-2 text-xs text-gray-500">(Resubmitted {{ $request->resubmission_count }}x)</span>
+                            @endif
                         </td>
                         <td class="border p-2">
                             <a href="{{ route('leave-requests.show', $request->id) }}" class="text-blue-500">View</a> |
-                            <a href="{{ route('leave-requests.edit', $request->id) }}" class="text-yellow-500">Edit</a> |
+                            <a href="{{ route('leave-requests.edit', $request->id) }}" class="text-yellow-500">{{ $request->status == 'rejected' ? 'Resubmit' : 'Edit' }}</a> |
                             <form action="{{ route('leave-requests.destroy', $request->id) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')

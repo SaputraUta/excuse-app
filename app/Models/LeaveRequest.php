@@ -18,6 +18,7 @@ class LeaveRequest extends Model
         'leave_type',
         'reason',
         'remark',
+        'resubmission_count'
     ];
 
     public function approvals()

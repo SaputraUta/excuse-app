@@ -45,6 +45,9 @@
                         ($approval->status == 'rejected' ? 'bg-red-500 text-white' : 'bg-yellow-500 text-black') }}">
                         {{ ucfirst($approval->status) }}
                     </span>
+                    @if ($approval->leaveRequest->resubmission_count > 0)
+                        <span class="ml-2 text-xs text-gray-500">(Resubmitted {{ $approval->leaveRequest->resubmission_count }}x)</span>
+                    @endif
                 </td>
                 <td class="border px-4 py-2 text-gray-500 italic">{{ $approval->remark ?? 'No remarks' }}</td>
                 <td class="border px-4 py-2">

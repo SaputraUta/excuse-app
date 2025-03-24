@@ -138,17 +138,30 @@ class LeaveRequestController extends Controller
             $validated['end_time'] = '18:00';
         }
 
-        $leaveRequest->update([
-            'request_date' => $validated['request_date'],
-            'leave_type' => $validated['leave_type'],
-            'is_full_day' => $request->boolean('is_full_day'),
-            'start_time' => $validated['start_time'],
-            'end_time' => $validated['end_time'],
-            'reason' => $validated['reason'],
-            'remark' => $validated['remark'] ?? null,
-        ]);
+        if ($leaveRequest->status === 'rejected') {
+            $leaveRequest->approvals()->delete();
 
-        return redirect()->route('leave-requests.index')->with('success', 'Leave request updated successfully.');
+            $admins = User::where('role', 'admin')->get();
+            if ($admins->isEmpty()) {
+                return redirect()->route('leave-requests.index')->with('error', 'No admins available to approve your request.');
+            }
+
+            $leaveRequest->update(array_merge($validated, [
+                'resubmission_count' => $leaveRequest->resubmission_count + 1
+            ]));
+
+            foreach ($admins as $admin) {
+                Approval::create([
+                    'leave_request_id' => $leaveRequest->id,
+                    'admin_id' => $admin->id,
+                    'status' => 'pending',
+                ]);
+            }
+            return redirect()->route('leave-requests.index')->with('success', 'Leave request resubmitted successfully.');
+        } else {
+            $leaveRequest->update($validated);
+            return redirect()->route('leave-requests.index')->with('success', 'Leave request updated successfully.');
+        }
     }
 
     public function destroy(LeaveRequest $leaveRequest)
