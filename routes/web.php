@@ -5,9 +5,15 @@ use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (Auth::check()) {
+        return Auth::user()->role === 'admin'
+            ? redirect()->route('approvals.index')
+            : redirect()->route('leave-requests.index');
+    }
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
