@@ -2,16 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         User::create([
@@ -19,6 +15,7 @@ class UserSeeder extends Seeder
             'email' => 'admin1@example.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'division_id' => 1,
         ]);
 
         User::create([
@@ -26,14 +23,16 @@ class UserSeeder extends Seeder
             'email' => 'admin2@example.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'division_id' => 2,
         ]);
 
-        // Create Users
+        // Users
         User::create([
             'name' => 'User One',
             'email' => 'user1@example.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'division_id' => 3,
         ]);
 
         User::create([
@@ -41,6 +40,15 @@ class UserSeeder extends Seeder
             'email' => 'user2@example.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'division_id' => 4,
+        ]);
+
+        User::create([
+            'name' => 'User Three',
+            'email' => 'user3@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'division_id' => 5,
         ]);
     }
 }
