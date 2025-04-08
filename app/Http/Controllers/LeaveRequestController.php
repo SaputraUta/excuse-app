@@ -15,13 +15,23 @@ class LeaveRequestController extends Controller
     {
         $query = LeaveRequest::where('user_id', Auth::id())->with('approvals')->get();
 
+        // Original status filter
         if ($request->filled('status')) {
             $query = $query->filter(function ($leaveRequest) use ($request) {
                 return $leaveRequest->status === $request->input('status');
             });
         }
 
+        // Month filter (only month, ignoring year)
+        if ($request->filled('month')) {
+            $month = (int) $request->input('month'); // Convert to integer (1-12)
+            $query = $query->filter(function ($leaveRequest) use ($month) {
+                return \Carbon\Carbon::parse($leaveRequest->request_date)->month === $month;
+            });
+        }
+
         $leaveRequests = $query->values();
+
         return view('leave_requests.index', compact('leaveRequests'));
     }
 

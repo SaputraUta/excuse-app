@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-bold text-gray-800">Leave Approvals</h2>
             
             <div class="w-full md:w-auto flex flex-col gap-3">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <!-- Status Filter -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -42,6 +42,19 @@
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ request('user') == $user->id ? 'selected' : '' }}>
                                     {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Month Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                        <select id="month-filter" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border text-sm" onchange="updateFilters()">
+                            <option value="">All Months</option>
+                            @foreach(range(1, 12) as $month)
+                                <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                                    {{ DateTime::createFromFormat('!m', $month)->format('F') }}
                                 </option>
                             @endforeach
                         </select>
@@ -86,7 +99,7 @@
                             {{ $approval->leaveRequest->leave_type }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {{ $approval->leaveRequest->request_date }}
+                            {{ \Carbon\Carbon::parse($approval->leaveRequest->request_date)->format('l, j F Y') }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {{ $approval->leaveRequest->start_time }} - {{ $approval->leaveRequest->end_time }}
@@ -111,18 +124,20 @@
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
                             <div class="flex flex-col gap-2">
-                                @if($approval->status == 'pending')
-                                <form action="{{ route('approvals.store') }}" method="POST" class="flex flex-col sm:flex-row gap-2">
+                                @if($approval->status == 'pending' || $approval->status == 'approved')
+                                <form id="approval-form-{{ $approval->id }}" action="{{ route('approvals.store') }}" method="POST" class="flex flex-col sm:flex-row gap-2">
                                     @csrf
                                     <input type="hidden" name="approval_id" value="{{ $approval->id }}">
                                     <input type="text" name="remark" placeholder="Remark" 
                                         class="flex-1 min-w-[120px] text-xs border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500">
                                     <div class="flex gap-2">
-                                        <button type="submit" name="status" value="approved" 
+                                        @if($approval->status == 'pending')
+                                        <button type="button" onclick="confirmAction('approve', {{ $approval->id }})" 
                                             class="flex-1 bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">
                                             Approve
                                         </button>
-                                        <button type="submit" name="status" value="rejected" 
+                                        @endif
+                                        <button type="button" onclick="confirmAction('reject', {{ $approval->id }})" 
                                             class="flex-1 bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">
                                             Reject
                                         </button>
@@ -155,8 +170,8 @@
                         <p class="text-sm font-medium">{{ $approval->leaveRequest->user->division->name ?? 'N/A' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Leave Type</p>
-                        <p class="text-sm font-medium">{{ $approval->leaveRequest->leave_type }}</p>
+                        <p class="text-xs text-gray-500">Request Date</p>
+                        <p class="text-sm font-medium">{{ \Carbon\Carbon::parse($approval->leaveRequest->request_date)->format('l, j F Y') }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-gray-500">Request Date</p>
@@ -193,9 +208,9 @@
                     <p class="text-sm italic">{{ $approval->remark ?? 'No remarks' }}</p>
                 </div>
 
-                @if($approval->status == 'pending')
+                @if($approval->status == 'pending' || $approval->status == 'approved')
                 <div class="mt-4 pt-4 border-t border-gray-200">
-                    <form action="{{ route('approvals.store') }}" method="POST" class="space-y-3">
+                    <form id="approval-form-{{ $approval->id }}" action="{{ route('approvals.store') }}" method="POST" class="space-y-3">
                         @csrf
                         <input type="hidden" name="approval_id" value="{{ $approval->id }}">
                         <div>
@@ -204,11 +219,13 @@
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-2 px-3 border text-sm">
                         </div>
                         <div class="flex space-x-3">
-                            <button type="submit" name="status" value="approved" 
+                            @if($approval->status == 'pending')
+                            <button type="button" onclick="confirmAction('approve', {{ $approval->id }})" 
                                 class="flex-1 bg-green-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                 Approve
                             </button>
-                            <button type="submit" name="status" value="rejected" 
+                            @endif
+                            <button type="button" onclick="confirmAction('reject', {{ $approval->id }})" 
                                 class="flex-1 bg-red-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                                 Reject
                             </button>
@@ -236,7 +253,36 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Approval Confirmation Modal -->
+<div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900" id="confirmation-title">Confirm Action</h3>
+                <button onclick="closeConfirmationModal()" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <p id="confirmation-message">Are you sure you want to perform this action?</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeConfirmationModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </button>
+                <button id="confirm-action-button" class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Request Details Modal -->
 <div id="approval-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div class="p-6">
@@ -265,6 +311,54 @@
 </div>
 
 <script>
+    // Variables to store the current action and approval ID
+    let currentAction = '';
+    let currentApprovalId = '';
+
+    // Show confirmation modal
+    function confirmAction(action, approvalId) {
+        currentAction = action;
+        currentApprovalId = approvalId;
+        
+        const modal = document.getElementById('confirmation-modal');
+        const title = document.getElementById('confirmation-title');
+        const message = document.getElementById('confirmation-message');
+        const confirmButton = document.getElementById('confirm-action-button');
+        
+        if (action === 'approve') {
+            title.textContent = 'Confirm Approval';
+            message.textContent = 'Are you sure you want to approve this leave request?';
+            confirmButton.className = 'px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500';
+            confirmButton.textContent = 'Approve';
+        } else {
+            title.textContent = 'Confirm Rejection';
+            message.textContent = 'Are you sure you want to reject this leave request?';
+            confirmButton.className = 'px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500';
+            confirmButton.textContent = 'Reject';
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    // Close confirmation modal
+    function closeConfirmationModal() {
+        document.getElementById('confirmation-modal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    // Handle confirmed action
+    document.getElementById('confirm-action-button').addEventListener('click', function() {
+        const form = document.getElementById(`approval-form-${currentApprovalId}`);
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = currentAction === 'approve' ? 'approved' : 'rejected';
+        form.appendChild(statusInput);
+        form.submit();
+        closeConfirmationModal();
+    });
+
     // Show/hide custom date range fields
     document.getElementById('date-range-filter').addEventListener('change', function() {
         const customDateRange = document.getElementById('custom-date-range');
@@ -277,16 +371,18 @@
     });
 
     function updateFilters() {
-    const status = document.getElementById("status-filter").value;
-    const division = document.getElementById("division-filter").value;
-    const user = document.getElementById("user-filter").value;
-    
-    let url = `?status=${status}`;
-    
-    if (division) url += `&division=${division}`;
-    if (user) url += `&user=${user}`;
-    
-    window.location.href = url;
+        const status = document.getElementById("status-filter").value;
+        const division = document.getElementById("division-filter").value;
+        const user = document.getElementById("user-filter").value;
+        const month = document.getElementById("month-filter").value;
+        
+        let url = `?status=${status}`;
+        
+        if (division) url += `&division=${division}`;
+        if (user) url += `&user=${user}`;
+        if (month) url += `&month=${month}`;
+        
+        window.location.href = url;
     }
 
     function resetFilters() {
@@ -308,11 +404,13 @@
             const status = document.getElementById("status-filter").value;
             const division = document.getElementById("division-filter").value;
             const user = document.getElementById("user-filter").value;
+            const month = document.getElementById("month-filter").value;
             
             let url = `?status=${status}&date_range=custom&from_date=${fromDate}&to_date=${toDate}`;
             
             if (division) url += `&division=${division}`;
             if (user) url += `&user=${user}`;
+            if (month) url += `&month=${month}`;
             
             window.location.href = url;
         }
@@ -428,6 +526,13 @@
     document.getElementById('approval-modal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
+        }
+    });
+
+    // Close confirmation modal when clicking outside content
+    document.getElementById('confirmation-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeConfirmationModal();
         }
     });
 </script>

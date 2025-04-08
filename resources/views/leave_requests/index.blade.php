@@ -15,16 +15,36 @@
             </div>
         </div>
 
-        {{-- Status Filter --}}
-        <form method="GET" class="mb-4 w-full max-w-xs">
-            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
-            <select name="status" id="status" onchange="this.form.submit()"
-                    class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                <option value="">All</option>
-                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-            </select>
+        <!-- Filters -->
+        <form method="GET" class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+                <select name="status" id="status" onchange="this.form.submit()"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <option value="">All</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
+            </div>
+
+            <!-- Month Filter (Only Month Names) -->
+            <div>
+                <label for="month" class="block text-sm font-medium text-gray-700 mb-1">Filter by Month</label>
+                <select name="month" id="month" onchange="this.form.submit()"
+                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <option value="">All Months</option>
+                    @foreach (range(1, 12) as $m)
+                        @php
+                            $monthName = \Carbon\Carbon::createFromFormat('m', $m)->format('F'); // e.g., "February"
+                        @endphp
+                        <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
+                            {{ $monthName }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
         </form>
 
         @if (session('success'))
@@ -49,7 +69,7 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($leaveRequests as $request)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-4 py-3 text-sm text-gray-900">{{ $request->request_date }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900">{{ \Carbon\Carbon::parse($request->request_date)->format('l, j F Y') }}</td>
                             <td class="px-4 py-3 text-sm text-gray-900">{{ $request->leave_type }}</td>
                             <td class="px-4 py-3 text-sm text-gray-500">
                                 {{ $request->is_full_day ? 'Full Day' : $request->start_time . ' - ' . $request->end_time }}
@@ -99,7 +119,7 @@
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
                     <div class="flex justify-between mb-3">
                         <div>
-                            <h3 class="text-sm font-medium text-gray-900">{{ $request->request_date }}</h3>
+                            <h3 class="text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($request->request_date)->format('l, j F Y') }}</h3>
                             <p class="text-xs text-gray-500">{{ $request->leave_type }}</p>
                         </div>
                         <div class="flex items-center gap-1">

@@ -17,6 +17,7 @@ class ApprovalController extends Controller
         $status = $request->query('status', 'all');
         $division = $request->query('division');
         $user = $request->query('user');
+        $month = $request->query('month');
 
         // Get all divisions and regular users (non-admins) for filter dropdowns
         $divisions = Division::all();
@@ -38,8 +39,14 @@ class ApprovalController extends Controller
                     $q->where('user_id', $user);
                 });
             })
+            ->when($month, function ($query) use ($month) {
+                return $query->whereHas('leaveRequest', function ($q) use ($month) {
+                    $q->whereMonth('request_date', $month);
+                });
+            })
             ->orderByDesc('created_at')
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->query()); // This preserves all query parameters in pagination links
 
         return view('admin.approvals.index', compact(
             'approvals',
@@ -47,7 +54,8 @@ class ApprovalController extends Controller
             'divisions',
             'users',
             'division',
-            'user'
+            'user',
+            'month'
         ));
     }
 
@@ -97,7 +105,7 @@ class ApprovalController extends Controller
         return response()->json([
             'user_name' => $leaveRequest->user->name,
             'leave_type' => $leaveRequest->leave_type,
-            'request_date' => $leaveRequest->request_date,
+            'request_date' => \Carbon\Carbon::parse($leaveRequest->request_date)->format('l, j F Y'),
             'start_time' => $leaveRequest->start_time,
             'end_time' => $leaveRequest->end_time,
             'reason' => $leaveRequest->reason,
@@ -111,7 +119,7 @@ class ApprovalController extends Controller
                 'status_class' => $a->status === 'approved' ? 'bg-green-100 text-green-800' : 
                                 ($a->status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'),
                 'remark' => $a->remark,
-                'approved_at' => $a->approved_at ? $a->approved_at->format('d M Y, H:i') : 'Pending',
+                'approved_at' => $a->approved_at ? \Carbon\Carbon::parse($a->approved_at)->format('l, j F Y') : 'Pending',
             ])
         ]);
     }

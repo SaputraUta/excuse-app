@@ -17,7 +17,7 @@
                 <div class="bg-gray-50 p-3 rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <p class="text-gray-700 text-sm sm:text-base">
                         <span class="font-semibold block text-gray-600">Request Date</span>
-                        {{ $leaveRequest->request_date }}
+                        {{ \Carbon\Carbon::parse($leaveRequest->request_date)->format('l, j F Y') }}
                     </p>
                 </div>
 
@@ -54,14 +54,14 @@
                 <div class="bg-gray-50 p-3 rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <p class="text-gray-700 text-sm sm:text-base">
                         <span class="font-semibold block text-gray-600">Created</span>
-                        {{ $leaveRequest->created_at->format('d M Y, H:i') }}
+                        {{ \Carbon\Carbon::parse($leaveRequest->created_at)->format('l, j F Y') }}
                     </p>
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                     <p class="text-gray-700 text-sm sm:text-base">
                         <span class="font-semibold block text-gray-600">Updated</span>
-                        {{ $leaveRequest->updated_at->format('d M Y, H:i') }}
+                        {{ \Carbon\Carbon::parse($leaveRequest->updated_at)->format('l, j F Y') }}
                     </p>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                                         </span>
                                     </div>
                                     <p class="text-sm text-gray-600"><span class="font-medium">Remark:</span> {{ $approval->remark ?? 'N/A' }}</p>
-                                    <p class="text-sm text-gray-500 mt-1"><span class="font-medium">Time:</span> {{ $approval->approved_at ? $approval->approved_at->format('d M Y, H:i') : 'Pending' }}</p>
+                                    <p class="text-sm text-gray-500 mt-1"><span class="font-medium">Time:</span> {{ $approval->approved_at ? \Carbon\Carbon::parse($approval->approved_at)->format('l, j F Y') : 'Pending' }}</p>
                                 </div>
                             </li>
                         @endforeach
