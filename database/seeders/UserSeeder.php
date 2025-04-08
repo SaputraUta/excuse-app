@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         User::create([
             'name' => 'Admin One',
-            'email' => 'admin1@example.com',
+            'username' => 'admin1', // Changed from email to username
             'password' => Hash::make('password'),
             'role' => 'admin',
             'division_id' => 1,
@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Admin Two',
-            'email' => 'admin2@example.com',
+            'username' => 'admin2', // Changed from email to username
             'password' => Hash::make('password'),
             'role' => 'admin',
             'division_id' => 2,
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
         // Users
         User::create([
             'name' => 'User One',
-            'email' => 'user1@example.com',
+            'username' => 'user1', // Changed from email to username
             'password' => Hash::make('password'),
             'role' => 'user',
             'division_id' => 3,
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'User Two',
-            'email' => 'user2@example.com',
+            'username' => 'user2', // Changed from email to username
             'password' => Hash::make('password'),
             'role' => 'user',
             'division_id' => 4,
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'User Three',
-            'email' => 'user3@example.com',
+            'username' => 'user3', // Changed from email to username
             'password' => Hash::make('password'),
             'role' => 'user',
             'division_id' => 5,

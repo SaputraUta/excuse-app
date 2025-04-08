@@ -61,6 +61,7 @@
                     <option value="Annual Leave" {{ old('leave_type') == 'Annual Leave' ? 'selected' : '' }}>Annual Leave</option>
                     <option value="Sick Leave" {{ old('leave_type') == 'Sick Leave' ? 'selected' : '' }}>Sick Leave</option>
                     <option value="Public Holiday" {{ old('leave_type') == 'Public Holiday' ? 'selected' : '' }}>Public Holiday</option>
+                    <option value="Overtime" {{ old('leave_type') == 'Overtime' ? 'selected' : '' }}>Overtime</option>
                 </select>
             </div>
 

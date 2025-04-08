@@ -18,7 +18,7 @@ return new class extends Migration
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->boolean('is_full_day')->default(false);
-            $table->enum('leave_type', ['Annual Leave', 'Sick Leave', 'Public Holiday'])->default('Annual Leave');
+            $table->enum('leave_type', ['Annual Leave', 'Sick Leave', 'Public Holiday', 'Overtime'])->default('Annual Leave');
             $table->text('reason');
             $table->text('remark')->nullable();
             $table->timestamps();

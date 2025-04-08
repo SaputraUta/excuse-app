@@ -34,11 +34,11 @@ class LeaveRequest extends Model
     {
         $approvals = $this->approvals;
 
-        if ($approvals->where('status', 'rejected')->count() > 0) {
+        if ($approvals->contains('status', 'rejected')) {
             return 'rejected';
         }
 
-        if ($approvals->where('status', 'approved')->count() >= 2) {
+        if ($approvals->contains('status', 'approved')) {
             return 'approved';
         }
 

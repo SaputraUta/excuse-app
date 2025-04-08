@@ -11,9 +11,17 @@ use Carbon\Carbon;
 
 class LeaveRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $leaveRequests = LeaveRequest::where('user_id', Auth::id())->with('approvals')->get();
+        $query = LeaveRequest::where('user_id', Auth::id())->with('approvals')->get();
+
+        if ($request->filled('status')) {
+            $query = $query->filter(function ($leaveRequest) use ($request) {
+                return $leaveRequest->status === $request->input('status');
+            });
+        }
+
+        $leaveRequests = $query->values();
         return view('leave_requests.index', compact('leaveRequests'));
     }
 
@@ -28,7 +36,7 @@ class LeaveRequestController extends Controller
 
         // Validation rules
         $validated = $request->validate([
-            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday',
+            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday,Overtime',
             'reason' => 'required|string',
             'remark' => 'nullable|string',
             'is_full_day' => 'boolean',
@@ -119,7 +127,7 @@ class LeaveRequestController extends Controller
 
         $validated = $request->validate([
             'request_date' => 'required|date',
-            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday',
+            'leave_type' => 'required|in:Annual Leave,Sick Leave,Public Holiday,Overtime',
             'is_full_day' => 'boolean',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',

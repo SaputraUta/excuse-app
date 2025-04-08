@@ -9,22 +9,22 @@
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
         @csrf
 
-        <!-- Email Address -->
+        <!-- Username -->
         <div>
-            <x-input-label for="email" :value="__('Email')" class="text-gray-700 font-medium" />
+            <x-input-label for="username" :value="__('Username')" class="text-gray-700 font-medium" />
             <div class="relative mt-1">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <i class="fas fa-envelope text-gray-400"></i>
+                    <i class="fas fa-user text-gray-400"></i>
                 </div>
-                <x-text-input id="email" 
+                <x-text-input id="username" 
                     class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
-                    type="email" 
-                    name="email" 
-                    :value="old('email')" 
-                    placeholder="your@email.com"
+                    type="text" 
+                    name="username" 
+                    :value="old('username')" 
+                    placeholder="username"
                     required autofocus autocomplete="username" />
             </div>
-            <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-600 text-sm" />
+            <x-input-error :messages="$errors->get('username')" class="mt-2 text-red-600 text-sm" />
         </div>
 
         <!-- Password -->
