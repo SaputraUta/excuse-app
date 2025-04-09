@@ -44,7 +44,9 @@ class ApprovalController extends Controller
                     $q->whereMonth('request_date', $month);
                 });
             })
-            ->orderByDesc('created_at')
+            ->join('leave_requests', 'approvals.leave_request_id', '=', 'leave_requests.id')
+            ->orderBy('leave_requests.request_date', 'asc') // Sort by closest request date
+            ->select('approvals.*')
             ->paginate(10)
             ->appends($request->query()); // This preserves all query parameters in pagination links
 

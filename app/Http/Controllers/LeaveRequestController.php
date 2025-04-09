@@ -29,8 +29,18 @@ class LeaveRequestController extends Controller
                 return \Carbon\Carbon::parse($leaveRequest->request_date)->month === $month;
             });
         }
-
-        $leaveRequests = $query->values();
+        
+        // Sort leave requests from nearest to farthest date
+        $today = Carbon::today();
+        $query = $query->filter(function ($leaveRequest) use ($today) {
+            return Carbon::parse($leaveRequest->request_date)->greaterThanOrEqualTo($today);
+        });
+    
+        // Sort from nearest to farthest upcoming request_date
+        $leaveRequests = $query->sortBy(function ($leaveRequest) use ($today) {
+            $requestDate = Carbon::parse($leaveRequest->request_date);
+            return abs($requestDate->timestamp - $today->timestamp);
+        })->values();
 
         return view('leave_requests.index', compact('leaveRequests'));
     }
